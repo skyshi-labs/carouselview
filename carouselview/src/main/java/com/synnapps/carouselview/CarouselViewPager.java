@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.animation.Interpolator;
 
 import java.lang.reflect.Field;
@@ -15,6 +16,7 @@ public class CarouselViewPager extends ViewPager {
 
     private ImageClickListener imageClickListener;
     private float oldX = 0, newX = 0, sens = 5;
+    private int mCurrentPagePosition = 0;
 
     public void setImageClickListener(ImageClickListener imageClickListener) {
         this.imageClickListener = imageClickListener;
@@ -80,4 +82,27 @@ public class CarouselViewPager extends ViewPager {
         return super.onTouchEvent(ev);
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        try {
+            boolean wrapHeight = MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST;
+            if (wrapHeight) {
+                View child = getChildAt(mCurrentPagePosition);
+                if (child != null) {
+                    child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+                    int h = child.getMeasuredHeight();
+
+                    heightMeasureSpec = MeasureSpec.makeMeasureSpec(h, MeasureSpec.EXACTLY);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    public void reMeasureCurrentPage(int position) {
+        mCurrentPagePosition = position;
+        requestLayout();
+    }
 }
